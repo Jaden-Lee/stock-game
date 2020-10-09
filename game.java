@@ -189,6 +189,7 @@ public class game {
                     Scanner banker = new Scanner(System.in);
                     int bankchoice = banker.nextInt();
                     if (bankchoice == 1) {
+                        curmoney = curmoney.setScale(2, RoundingMode.CEILING);
                         System.out.println("How much would you like to deposit? (max: $" + curmoney + ")");
                         double money = banker.nextDouble();
                         bank += money;
@@ -310,7 +311,7 @@ public class game {
 
     private static void askDecision() {
         System.out.println("What would you like to do?");
-        System.out.println("Enter '0' to go on to the next day. Enter '1' to quit. Enter '2' to buy. Enter '3' to sell. Enter '4' to display your shares. \n Enter '5' to enter the bank. Enter '9' to skip 10 days.");
+        System.out.println("Enter '0' to go on to the next day. Enter '1' to quit. Enter '2' to buy. Enter '3' to sell. Enter '4' to display your shares. \nEnter '5' to enter the bank. Enter '9' to skip 10 days.");
     }
 
     private static void displayMarket(HashSet<Stock> stocks) {
@@ -358,7 +359,7 @@ public class game {
         added = added.setScale(2, RoundingMode.CEILING);
         BigDecimal tbank = added.add(new BigDecimal(bank));
         tbank = tbank.setScale(2, RoundingMode.CEILING);
-        System.out.println("Total portfolio: $" + added + ".");
+        System.out.println("Total portfolio: $" + tbank + ".");
         System.out.println("-------------------");
     }
 
