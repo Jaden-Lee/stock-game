@@ -9,7 +9,9 @@ import java.util.Scanner;
 
 public class game {
     public static final double DELTA = 0.0001;
+    public static final double INTEREST = 0.005;
     public static void main(String[] args) throws FileNotFoundException {
+        System.out.println();
         Scanner days = new Scanner(new File("days.txt"));
         int day = days.nextInt();
         days.close();
@@ -26,6 +28,10 @@ public class game {
         // double curmoney = Double.parseDouble(temp);
         BigDecimal curmoney = new BigDecimal(temp);
         curmoney = curmoney.setScale(2, RoundingMode.CEILING);
+        if (curmoney.toString().equals("-0.01") || curmoney.toString().equals("0.01")) {
+            curmoney = new BigDecimal(0.00);
+            curmoney = curmoney.setScale(2, RoundingMode.CEILING);
+        }
         HashMap<Stock, Integer> owned = new HashMap<>();
         double bank = 0.0;
         while (balance.hasNextLine()) {
@@ -55,12 +61,11 @@ public class game {
 
         if (choice == 9) {
             for (int i = 0; i < 10; i++) {
+                bank *= (1+INTEREST);
+                bank = round(bank);
                 for (Stock stock : stocks) {
                     double random = Math.random();
                     stock.fluctuatePrice(random);
-
-                    bank *= (1+0.0075);
-                    bank = round(bank);
 
                     if (goodDay()) {
                         double mult = (1+Math.random());
@@ -94,12 +99,11 @@ public class game {
             day += 10;
         } else if (choice == 99) {
             for (int i = 0; i < 100; i++) {
+                bank *= (1+INTEREST);
+                bank = round(bank);
                 for (Stock stock : stocks) {
                     double random = Math.random();
                     stock.fluctuatePrice(random);
-
-                    bank *= (1+0.0075);
-                    bank = round(bank);
 
                     if (goodDay()) {
                         double mult = (1+Math.random());
@@ -184,7 +188,7 @@ public class game {
                 } 
                 else if (choice == 5) {
                     displayStats(curmoney, owned, bank);
-                    System.out.println("Welcome to the bank! Our interest rate is 0.75% per day. You have $" + bank + " in the bank.");
+                    System.out.println("Welcome to the bank! Our interest rate is  " + INTEREST*100 + "% per day. You have $" + bank + " in the bank.");
                     System.out.println("Type '1' to deposit money. Type '2' to withdraw.");
                     Scanner banker = new Scanner(System.in);
                     int bankchoice = banker.nextInt();
@@ -212,7 +216,7 @@ public class game {
                 choice = decision.nextInt();
             }
 
-            bank *= (1+0.0075);
+            bank *= (1+INTEREST);
             bank = round(bank);
 
             balance.close();
