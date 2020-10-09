@@ -14,7 +14,6 @@ public class game {
         int day = days.nextInt();
         days.close();
 
-        double bank = 0.0;
         Scanner prices = new Scanner(new File("prices.txt"));
         HashSet<Stock> stocks = new HashSet<>();
         while (prices.hasNextLine()) {
@@ -28,20 +27,26 @@ public class game {
         BigDecimal curmoney = new BigDecimal(temp);
         curmoney = curmoney.setScale(2, RoundingMode.CEILING);
         HashMap<Stock, Integer> owned = new HashMap<>();
+        double bank = 0.0;
         while (balance.hasNextLine()) {
             String cur = balance.nextLine();
-            String name = cur.substring(0,cur.indexOf(" "));
-            int quantity = Integer.parseInt(cur.substring(cur.indexOf(" ")+1));
-            for (Stock stock : stocks) {
-                if (stock.valEquals(name)) {
-                    owned.put(stock, quantity);
+            if (cur.indexOf(" ") == -1) {
+                bank = Double.parseDouble(cur);
+            }
+            else {
+                String name = cur.substring(0,cur.indexOf(" "));
+                int quantity = Integer.parseInt(cur.substring(cur.indexOf(" ")+1));
+                for (Stock stock : stocks) {
+                    if (stock.valEquals(name)) {
+                        owned.put(stock, quantity);
+                    }
                 }
             }
         }
         
         Scanner decision = new Scanner(System.in);
         System.out.println("It has been " + day + " days since you started this game.");
-        displayStats(curmoney, owned);
+        displayStats(curmoney, owned, bank);
         System.out.println();
         displayMarket(stocks);
         System.out.println();
@@ -53,6 +58,10 @@ public class game {
                 for (Stock stock : stocks) {
                     double random = Math.random();
                     stock.fluctuatePrice(random);
+
+                    bank *= (1+0.0075);
+                    bank = round(bank);
+
                     if (goodDay()) {
                         double mult = (1+Math.random());
                         int roundmult = (int) Math.round((mult-1)*10000);
@@ -88,6 +97,10 @@ public class game {
                 for (Stock stock : stocks) {
                     double random = Math.random();
                     stock.fluctuatePrice(random);
+
+                    bank *= (1+0.0075);
+                    bank = round(bank);
+
                     if (goodDay()) {
                         double mult = (1+Math.random());
                         int roundmult = (int) Math.round((mult-1)*10000);
@@ -143,7 +156,7 @@ public class game {
                         }
                     }
                 } else if (choice == 3) {
-                    displayStats(curmoney, owned);
+                    displayStats(curmoney, owned, bank);
                     System.out.println("What stock do you want to sell?");
                     String stockChoice = decision.next();
                     if (stockChoice.equalsIgnoreCase("All")) {
@@ -167,10 +180,10 @@ public class game {
                         }
                     }
                 } else if (choice == 4) {
-                    displayStats(curmoney, owned);
+                    displayStats(curmoney, owned, bank);
                 } 
                 else if (choice == 5) {
-                    displayStats(curmoney, owned);
+                    displayStats(curmoney, owned, bank);
                     System.out.println("Welcome to the bank! Our interest rate is 0.75% per day. You have $" + bank + " in the bank.");
                     System.out.println("Type '1' to deposit money. Type '2' to withdraw.");
                     Scanner banker = new Scanner(System.in);
@@ -184,10 +197,22 @@ public class game {
                         tmoney = tmoney.setScale(2, RoundingMode.CEILING);
                         curmoney = curmoney.subtract(tmoney);
                     }
+                    else if (bankchoice == 2) {
+                        System.out.println("How much would you like to withdraw? (max: $" + bank + ")");
+                        double money = banker.nextDouble();
+                        bank -= money;
+
+                        BigDecimal tmoney = new BigDecimal(money);
+                        tmoney = tmoney.setScale(2, RoundingMode.CEILING);
+                        curmoney = curmoney.add(tmoney);
+                    }
                 }
                 askDecision();
                 choice = decision.nextInt();
             }
+
+            bank *= (1+0.0075);
+            bank = round(bank);
 
             balance.close();
             prices.close();
@@ -270,6 +295,7 @@ public class game {
         for (Stock stock : owned.keySet()) {
             balanceExport.println(stock.name + " " + owned.get(stock));
         }
+        balanceExport.println(bank);
         balanceExport.close();
 
         PrintWriter pricesExport = new PrintWriter("prices.txt");
@@ -284,7 +310,7 @@ public class game {
 
     private static void askDecision() {
         System.out.println("What would you like to do?");
-        System.out.println("Click '1' to go on to the next day. Click '2' to buy. Click '3' to sell. Click '4' to display your shares.");
+        System.out.println("Enter '0' to go on to the next day. Enter '1' to quit. Enter '2' to buy. Enter '3' to sell. Enter '4' to display your shares. \n Enter '5' to enter the bank. Enter '9' to skip 10 days.");
     }
 
     private static void displayMarket(HashSet<Stock> stocks) {
@@ -314,8 +340,9 @@ public class game {
         System.out.println("-------------------");
     }
 
-    private static void displayStats(BigDecimal curmoney, HashMap<Stock, Integer> owned) {
+    private static void displayStats(BigDecimal curmoney, HashMap<Stock, Integer> owned, double bank) {
         System.out.println("You currently have $" + curmoney + ".");
+        System.out.println("You currently have $" + bank + " in the bank.");
 
         System.out.println();
         System.out.println("-------------------");
@@ -329,6 +356,8 @@ public class game {
         }
         BigDecimal added = curmoney.add(new BigDecimal(tot));
         added = added.setScale(2, RoundingMode.CEILING);
+        BigDecimal tbank = added.add(new BigDecimal(bank));
+        tbank = tbank.setScale(2, RoundingMode.CEILING);
         System.out.println("Total portfolio: $" + added + ".");
         System.out.println("-------------------");
     }
